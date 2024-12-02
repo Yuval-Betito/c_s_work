@@ -1,7 +1,11 @@
 import hmac
 import hashlib
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login as django_login  # Import Django's login
+from django.contrib.auth import authenticate, login as django_login
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.views import PasswordChangeView
+from django.urls import reverse_lazy
 
 from .forms import RegisterForm
 from .models import User
@@ -19,17 +23,15 @@ def verify_password(stored_password, entered_password):
 
 
 def user_login(request):
+    """Function to handle user login"""
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        # Fetch the user from the database
-        user = User.objects.get(username=username)
-
-        # Verify the password using the stored hash and salt
-        if verify_password(user.password, password):
-            # If the password is correct, log the user in
-            django_login(request, user)  # Use Django's login function to log the user in
+        # Authenticate user with Django's built-in method
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            django_login(request, user)
             return redirect('home')  # Redirect to a home page or dashboard
         else:
             return render(request, 'users/login.html', {'error': 'Invalid credentials'})
@@ -38,6 +40,7 @@ def user_login(request):
 
 
 def register(request):
+    """Function to handle user registration"""
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
@@ -48,5 +51,24 @@ def register(request):
 
     return render(request, 'users/register.html', {'form': form})
 
+
 def home(request):
+    """Function to render the home page"""
     return render(request, 'users/home.html')  # Return a home template
+
+
+class CustomPasswordChangeView(PasswordChangeView):
+    """Custom view for handling password change"""
+    template_name = 'users/password_change.html'
+    success_url = reverse_lazy('password_change_done')  # Redirect after success
+
+    def form_valid(self, form):
+        """Update the session after password change"""
+        response = super().form_valid(form)
+        update_session_auth_hash(self.request, form.user)  # Keep the user logged in
+        return response
+
+
+def password_change_done(request):
+    """Function to display the password change success message"""
+    return render(request, 'users/password_change_done.html')
