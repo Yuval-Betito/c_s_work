@@ -50,3 +50,40 @@ class RegisterForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
+
+class PasswordChangeCustomForm(forms.Form):
+    """Custom form for password change."""
+    old_password = forms.CharField(widget=forms.PasswordInput, label="Current Password")
+    new_password = forms.CharField(widget=forms.PasswordInput, label="New Password")
+    confirm_new_password = forms.CharField(widget=forms.PasswordInput, label="Confirm New Password")
+
+    def clean_new_password(self):
+        new_password = self.cleaned_data.get('new_password')
+
+        # Load configuration from the JSON file
+        with open(settings.BASE_DIR / 'password_config.json', 'r') as f:
+            config = json.load(f)
+
+        # Check password length
+        if len(new_password) < config['min_length']:
+            raise ValidationError(f"Password must be at least {config['min_length']} characters long.")
+
+        # Check for uppercase, lowercase, digits, and special characters
+        if config['require_uppercase'] and not re.search(r'[A-Z]', new_password):
+            raise ValidationError("Password must contain at least one uppercase letter.")
+        if config['require_lowercase'] and not re.search(r'[a-z]', new_password):
+            raise ValidationError("Password must contain at least one lowercase letter.")
+        if config['require_digit'] and not re.search(r'\d', new_password):
+            raise ValidationError("Password must contain at least one digit.")
+        if config['require_special'] and not re.search(r'[!@#$%^&*(),.?":{}|<>]', new_password):
+            raise ValidationError("Password must contain at least one special character.")
+
+        return new_password
+
+    def clean(self):
+        cleaned_data = super().clean()
+        new_password = cleaned_data.get('new_password')
+        confirm_new_password = cleaned_data.get('confirm_new_password')
+        if new_password != confirm_new_password:
+            raise ValidationError("New passwords do not match.")
