@@ -4,13 +4,15 @@ import os
 import hmac
 import hashlib
 
+
 class UserManager(BaseUserManager):
     def create_user(self, username, email, password=None):
         if not email:
             raise ValueError("Users must have an email address")
         email = self.normalize_email(email)
         user = self.model(username=username, email=email)
-        user.set_password(password)  # This will use our customized password hashing
+        if password:
+            user.set_password(password)  # Use the customized password hashing
         user.save(using=self._db)
         return user
 
@@ -19,6 +21,7 @@ class UserManager(BaseUserManager):
         user.is_admin = True
         user.save(using=self._db)
         return user
+
 
 class User(AbstractBaseUser):
     username = models.CharField(max_length=50, unique=True)
@@ -33,6 +36,22 @@ class User(AbstractBaseUser):
 
     def set_password(self, raw_password):
         """Override set_password to use HMAC + Salt"""
-        salt = os.urandom(16).hex()  # Generate a random Salt
-        hashed_password = hmac.new(salt.encode(), raw_password.encode(), hashlib.sha256).hexdigest()
-        self.password = f'{salt}${hashed_password}'  # Save salt and hash in the format: salt$hashed_password
+        if raw_password:
+            salt = os.urandom(16).hex()  # Generate a random Salt
+            hashed_password = hmac.new(salt.encode(), raw_password.encode(), hashlib.sha256).hexdigest()
+            self.password = f'{salt}${hashed_password}'  # Save salt and hash in the format: salt$hashed_password'
+
+    def check_password(self, raw_password):
+        """Verify the user's password"""
+        if not self.password:
+            return False
+        try:
+            salt, stored_hash = self.password.split('$')
+            entered_hash = hmac.new(salt.encode(), raw_password.encode(), hashlib.sha256).hexdigest()
+            return stored_hash == entered_hash
+        except ValueError:
+            return False
+
+    def __str__(self):
+        return self.username
+
