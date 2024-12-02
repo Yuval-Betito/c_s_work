@@ -3,6 +3,7 @@ from .models import User
 import json
 import re
 from django.core.exceptions import ValidationError
+from django.conf import settings  # Import settings to access BASE_DIR
 
 class RegisterForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
@@ -15,8 +16,8 @@ class RegisterForm(forms.ModelForm):
     def clean_password(self):
         password = self.cleaned_data.get('password')
 
-        # Load configuration from the JSON file
-        with open('password_config.json', 'r') as f:
+        # Load configuration from the JSON file using BASE_DIR
+        with open(settings.BASE_DIR / 'password_config.json', 'r') as f:  # Using BASE_DIR to ensure correct path
             config = json.load(f)
 
         # Check password length
