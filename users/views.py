@@ -7,7 +7,7 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.views import PasswordChangeView
 from django.urls import reverse_lazy
 
-from .forms import RegisterForm
+from .forms import RegisterForm,CustomerForm
 from .models import User
 
 def verify_password(stored_password, entered_password):
@@ -32,7 +32,7 @@ def user_login(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             django_login(request, user)
-            return redirect('home')  # Redirect to a home page or dashboard
+            return redirect('add_customer')  # Redirect to add_customer
         else:
             return render(request, 'users/login.html', {'error': 'Invalid credentials'})
 
@@ -72,3 +72,25 @@ class CustomPasswordChangeView(PasswordChangeView):
 def password_change_done(request):
     """Function to display the password change success message"""
     return render(request, 'users/password_change_done.html')
+
+
+def create_customer(request):
+    """Handle creating a new customer"""
+    customer = None
+
+    if request.method == 'POST':
+        form = CustomerForm(request.POST)
+        phone_number = request.POST.get('phone_number', '').strip()
+
+        if form.is_valid() and phone_number.startswith("05") and phone_number.isdigit() and len(phone_number) == 10:
+            customer = form.save(commit=False)
+            customer.phone_number = phone_number
+            customer.save()
+            form = CustomerForm()  # איפוס הטופס לאחר שמירה
+        else:
+            form.add_error('phone_number', "Please enter a valid Israeli phone number.")
+
+    else:
+        form = CustomerForm()
+
+    return render(request, 'users/create_customer.html', {'form': form, 'customer': customer})

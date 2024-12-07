@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views  # Import for built-in views
 from users import views  # Import for home view
 
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('users/', include('users.urls')),  # Include user-specific URLs
@@ -14,4 +15,5 @@ urlpatterns = [
     # Add path for the home page
     path('', views.home, name='home'),  # Home page route
 ]
+
 

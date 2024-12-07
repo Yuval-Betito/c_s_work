@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>הוספת לקוח חדש</title>
+</head>
+</head>
+<body>
+    <h1>Add a new customer</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">add customer</button>
+    </form>
+
+    {% if customer %}
+        <h2>A new customer has successfully been added</h2>
+        <p>The new customer's name is: {{ customer.firstname }} {{ customer.lastname }}</p>
+    {% endif %}
+</body>
+</html>

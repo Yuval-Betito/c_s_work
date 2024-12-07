@@ -1,5 +1,5 @@
 from django import forms
-from .models import User
+from .models import User,Customer
 import json
 import re
 from django.core.exceptions import ValidationError
@@ -87,3 +87,20 @@ class PasswordChangeCustomForm(forms.Form):
         confirm_new_password = cleaned_data.get('confirm_new_password')
         if new_password != confirm_new_password:
             raise ValidationError("New passwords do not match.")
+
+
+class CustomerForm(forms.ModelForm):
+    class Meta:
+        model = Customer
+        fields = ['firstname', 'lastname', 'customer_id', 'phone_number', 'email']  # השדות בטופס
+
+    def __init__(self, *args, **kwargs):
+        super(CustomerForm, self).__init__(*args, **kwargs)
+        # הגדרת ערך ברירת מחדל לשדה phone_number
+        self.fields['phone_number'].widget.attrs.update({'value': '05'})
+
+    def save(self, commit=True):
+        customer = super().save(commit=False)  # שמירת אובייקט בלי לכתוב אותו למסד הנתונים מיד
+        if commit:
+            customer.save()  # שמירה למסד הנתונים אם commit=True
+        return customer

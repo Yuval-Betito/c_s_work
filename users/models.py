@@ -3,6 +3,8 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 import os
 import hmac
 import hashlib
+from django.core.validators import RegexValidator
+
 
 
 class UserManager(BaseUserManager):
@@ -54,4 +56,14 @@ class User(AbstractBaseUser):
 
     def __str__(self):
         return self.username
+
+class Customer(models.Model):
+    firstname = models.CharField(max_length=50, unique=True)
+    lastname = models.CharField(max_length=50, unique=True)
+    customer_id = models.CharField(max_length=10, unique=True)
+    email = models.EmailField(max_length=100, unique=True)
+    phone_number = models.CharField(max_length=10)
+
+    objects = UserManager()
+    REQUIRED_FIELDS = ['firstname','lastname','customer_id','email','phone']
 
