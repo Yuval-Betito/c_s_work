@@ -1,11 +1,10 @@
-<!-- templates/home.html -->
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Home</title>
-</head>
-<body>
+{% extends 'base.html' %}
+
+{% block title %}
+Home
+{% endblock %}
+
+{% block content %}
     <h1>Welcome, {{ user.username }}!</h1>
-    <p>You are now log in.</p>
-</body>
-</html>
+    <p>You are now logged in.</p>
+{% endblock %}
