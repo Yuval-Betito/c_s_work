@@ -16,11 +16,10 @@
                 {% if user.is_authenticated %}
                     <li><a href="{% url 'password_change' %}">Change Password</a></li>
                     <li><a href="{% url 'logout' %}">Logout</a></li>
+                    <li><a href="{% url 'create_customer' %}">Create Customer</a></li>
                 {% else %}
                     <li><a href="{% url 'login' %}">Login</a></li>
                     <li><a href="{% url 'register' %}">Register</a></li>
-                    <li><a href="{% url 'create_customer' %}">Create customer</a></li>
-
                 {% endif %}
             </ul>
         </nav>
@@ -38,4 +37,3 @@
 
 </body>
 </html>
-
