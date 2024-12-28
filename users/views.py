@@ -6,7 +6,7 @@ from django.contrib.auth.views import PasswordChangeView
 from django.urls import reverse_lazy
 from django.contrib import messages  # לשימוש בהודעות
 from .forms import RegisterForm, CustomerForm
-from .models import User
+
 
 def user_login(request):
     """Handle user login"""
@@ -17,11 +17,10 @@ def user_login(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             django_login(request, user)
-            return redirect('add_customer')  # Redirect to add_customer
+            messages.success(request, "Logged in successfully!")
+            return redirect('home')
         else:
-            messages.error(request, 'Invalid username or password.')  # הודעת שגיאה מותאמת
-            return render(request, 'users/login.html')
-
+            messages.error(request, "Invalid username or password.")
     return render(request, 'users/login.html')
 
 
@@ -31,8 +30,10 @@ def register(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Registration successful. Please log in.')
+            messages.success(request, "Registration successful. Please log in.")
             return redirect('login')
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = RegisterForm()
 
@@ -53,7 +54,7 @@ class CustomPasswordChangeView(PasswordChangeView):
         """Update the session after password change"""
         response = super().form_valid(form)
         update_session_auth_hash(self.request, form.user)
-        messages.success(self.request, 'Password changed successfully.')
+        messages.success(self.request, "Password changed successfully.")
         return response
 
 
@@ -67,13 +68,12 @@ def create_customer(request):
     if request.method == 'POST':
         form = CustomerForm(request.POST)
         if form.is_valid():
-            customer = form.save()  # שמירה ישירה של האובייקט מהטופס
+            customer = form.save()
             messages.success(request, f"Customer {customer.firstname} {customer.lastname} added successfully!")
             return redirect('home')
         else:
-            messages.error(request, "Invalid data submitted. Please check the form fields.")
+            messages.error(request, "Please correct the errors below.")
     else:
         form = CustomerForm()
 
     return render(request, 'users/create_customer.html', {'form': form})
-
