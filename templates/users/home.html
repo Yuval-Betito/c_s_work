@@ -9,7 +9,7 @@ Home
 
     {% if user.is_authenticated %}
         <p>Hello, {{ user.username }}! You are logged in.</p>
-        <p><a href="{% url 'create_customer' %}">Create a new customer</a></p>
+        <p><a href="{% url 'add_customer' %}">Create a new customer</a></p> <!-- עדכון השם ל-add_customer -->
     {% else %}
         <p>You are not logged in. Please <a href="{% url 'login' %}">login</a>.</p>
     {% endif %}
