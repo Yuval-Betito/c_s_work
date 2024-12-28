@@ -6,7 +6,6 @@ import hashlib
 from django.core.validators import RegexValidator
 
 
-
 class UserManager(BaseUserManager):
     def create_user(self, username, email, password=None):
         if not email:
@@ -57,13 +56,16 @@ class User(AbstractBaseUser):
     def __str__(self):
         return self.username
 
+
 class Customer(models.Model):
-    firstname = models.CharField(max_length=50, unique=True)
-    lastname = models.CharField(max_length=50, unique=True)
+    firstname = models.CharField(max_length=50)
+    lastname = models.CharField(max_length=50)
     customer_id = models.CharField(max_length=10, unique=True)
     email = models.EmailField(max_length=100, unique=True)
-    phone_number = models.CharField(max_length=10)
+    phone_number = models.CharField(
+        max_length=10,
+        validators=[RegexValidator(r'^\d{10}$', message="Phone number must be 10 digits.")],
+    )
 
-    objects = UserManager()
-    REQUIRED_FIELDS = ['firstname','lastname','customer_id','email','phone']
-
+    def __str__(self):
+        return f"{self.firstname} {self.lastname}"
