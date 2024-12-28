@@ -1,25 +1,12 @@
-import hmac
-import hashlib
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as django_login
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.views import PasswordChangeView
 from django.urls import reverse_lazy
-
+from django.contrib import messages  # לשימוש בהודעות
 from .forms import RegisterForm, CustomerForm
 from .models import User
-
-
-def verify_password(stored_password, entered_password):
-    """Verify password by comparing entered password with the stored hash"""
-    try:
-        salt, stored_hash = stored_password.split('$')
-        entered_hash = hmac.new(salt.encode(), entered_password.encode(), hashlib.sha256).hexdigest()
-        return stored_hash == entered_hash
-    except ValueError:
-        return False
-
 
 def user_login(request):
     """Handle user login"""
@@ -32,7 +19,8 @@ def user_login(request):
             django_login(request, user)
             return redirect('add_customer')  # Redirect to add_customer
         else:
-            return render(request, 'users/login.html', {'error': 'Invalid credentials'})
+            messages.error(request, 'Invalid username or password.')  # הודעת שגיאה מותאמת
+            return render(request, 'users/login.html')
 
     return render(request, 'users/login.html')
 
@@ -43,6 +31,7 @@ def register(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Registration successful. Please log in.')
             return redirect('login')
     else:
         form = RegisterForm()
@@ -64,6 +53,7 @@ class CustomPasswordChangeView(PasswordChangeView):
         """Update the session after password change"""
         response = super().form_valid(form)
         update_session_auth_hash(self.request, form.user)
+        messages.success(self.request, 'Password changed successfully.')
         return response
 
 
@@ -74,24 +64,16 @@ def password_change_done(request):
 
 def create_customer(request):
     """Handle creating a new customer"""
-    customer = None
-
     if request.method == 'POST':
         form = CustomerForm(request.POST)
-        phone_number = request.POST.get('phone_number', '').strip()
-
         if form.is_valid():
-            if phone_number.startswith("05") and phone_number.isdigit() and len(phone_number) == 10:
-                customer = form.save(commit=False)
-                customer.phone_number = phone_number
-                customer.save()
-                form = CustomerForm()  # Reset the form after saving
-            else:
-                form.add_error('phone_number', "Please enter a valid Israeli phone number.")
+            customer = form.save()  # שמירה ישירה של האובייקט מהטופס
+            messages.success(request, f"Customer {customer.firstname} {customer.lastname} added successfully!")
+            return redirect('home')
         else:
-            form.add_error(None, "Invalid data submitted. Please check the form fields.")
-
+            messages.error(request, "Invalid data submitted. Please check the form fields.")
     else:
         form = CustomerForm()
 
-    return render(request, 'users/create_customer.html', {'form': form, 'customer': customer})
+    return render(request, 'users/create_customer.html', {'form': form})
+
