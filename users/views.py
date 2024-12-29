@@ -20,7 +20,7 @@ def user_login(request):
             messages.success(request, "Logged in successfully!")
             return redirect('home')
         else:
-            messages.error(request, "Invalid username or password.")
+            messages.error(request, "Invalid username or password. Please try again.")
     return render(request, 'users/login.html')
 
 
@@ -33,7 +33,7 @@ def register(request):
             messages.success(request, "Registration successful. Please log in.")
             return redirect('login')
         else:
-            messages.error(request, "Please correct the errors below.")
+            messages.error(request, "There was an error in your registration. Please try again.")
     else:
         form = RegisterForm()
 
@@ -54,7 +54,7 @@ class CustomPasswordChangeView(PasswordChangeView):
         """Update the session after password change"""
         response = super().form_valid(form)
         update_session_auth_hash(self.request, form.user)
-        messages.success(self.request, "Password changed successfully.")
+        messages.success(self.request, "Your password was changed successfully.")
         return response
 
 
@@ -72,7 +72,7 @@ def create_customer(request):
             messages.success(request, f"Customer {customer.firstname} {customer.lastname} added successfully!")
             return redirect('home')
         else:
-            messages.error(request, "Please correct the errors below.")
+            messages.error(request, "Error in creating customer. Please check the form fields.")
     else:
         form = CustomerForm()
 
