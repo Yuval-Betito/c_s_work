@@ -60,6 +60,11 @@ class User(AbstractBaseUser):
     def __str__(self):
         return self.username
 
+    @property
+    def is_staff(self):
+        """Check if the user has admin privileges."""
+        return self.is_admin
+
 
 class Customer(models.Model):
     """Model for storing customer details."""
@@ -74,3 +79,4 @@ class Customer(models.Model):
 
     def __str__(self):
         return f"{self.firstname} {self.lastname}"
+
