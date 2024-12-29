@@ -4,7 +4,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.views import PasswordChangeView
 from django.urls import reverse_lazy
-from django.contrib import messages  # לשימוש בהודעות
+from django.contrib import messages  # For displaying messages
 from .forms import RegisterForm, CustomerForm
 
 
