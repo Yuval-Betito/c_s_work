@@ -10,6 +10,18 @@ from .forms import RegisterForm, CustomerForm
 from .models import User
 import hashlib
 import random
+import re
+from django.core.mail import send_mail
+from django.conf import settings
+
+
+# פונקציה לשליחת המייל עם הטוקן
+def send_reset_email(user):
+    """Send reset email with the generated token."""
+    token = user.reset_token
+    subject = "Password Reset Request"
+    message = f"Use the following token to reset your password: {token}"
+    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
 
 
 def user_login(request):
@@ -97,10 +109,29 @@ def forgot_password(request):
             reset_token = hashlib.sha1(random_value.encode()).hexdigest()
             user.reset_token = reset_token
             user.save()
+            
+            # Send reset token to email
+            send_reset_email(user)
+            
             messages.success(request, "Reset token sent to your email.")
         except User.DoesNotExist:
             messages.error(request, "No user found with this email.")
     return render(request, 'users/forgot_password.html')
+
+
+def validate_password(password):
+    """Check if the password meets the requirements."""
+    if len(password) < 10:
+        return False
+    if not re.search(r'[A-Z]', password):  # Uppercase letter
+        return False
+    if not re.search(r'[a-z]', password):  # Lowercase letter
+        return False
+    if not re.search(r'[0-9]', password):  # Digit
+        return False
+    if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):  # Special character
+        return False
+    return True
 
 
 def reset_password(request):
@@ -110,11 +141,14 @@ def reset_password(request):
         new_password = request.POST.get('new_password')
         try:
             user = User.objects.get(reset_token=token)
-            user.set_password(new_password)
-            user.reset_token = None  # Clear the reset token
-            user.save()
-            messages.success(request, "Password reset successfully.")
-            return redirect('login')
+            if validate_password(new_password):
+                user.set_password(new_password)
+                user.reset_token = None  # Clear the reset token
+                user.save()
+                messages.success(request, "Password reset successfully.")
+                return redirect('login')
+            else:
+                messages.error(request, "Password does not meet the requirements.")
         except User.DoesNotExist:
             messages.error(request, "Invalid reset token.")
     return render(request, 'users/reset_password.html')
