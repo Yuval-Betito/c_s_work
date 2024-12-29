@@ -6,12 +6,13 @@ Home
 
 {% block content %}
     <h1>Welcome to the Home Page!</h1>
+    
     {% if user.is_authenticated %}
         <p>Hello, {{ user.username }}! You are logged in.</p>
 
-        <!-- הסדר שהגדרת -->
+        <!-- סדר הקישורים על פי הדרישות -->
         <div><a href="{% url 'home' %}">Home</a></div>
-        <div><a href="{% url 'add_customer' %}">Create a new customer</a></div> <!-- עדכון השם ל-add_customer -->
+        <div><a href="{% url 'add_customer' %}">Create a new customer</a></div>
         <div><a href="{% url 'password_change' %}">Change Password</a></div>
         <div><a href="{% url 'logout' %}">Logout</a></div>
     {% else %}
