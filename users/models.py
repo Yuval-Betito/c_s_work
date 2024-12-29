@@ -7,6 +7,7 @@ from django.core.validators import RegexValidator
 
 
 class UserManager(BaseUserManager):
+    """Custom manager for User model."""
     def create_user(self, username, email, password=None):
         if not email:
             raise ValueError("Users must have an email address")
@@ -25,11 +26,12 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser):
+    """Custom User model with HMAC + Salt for password handling."""
     username = models.CharField(max_length=50, unique=True)
     email = models.EmailField(max_length=100, unique=True)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
-    reset_token = models.CharField(max_length=100, blank=True, null=True)  # שדה לטוקן לאיפוס סיסמה
+    reset_token = models.CharField(max_length=100, blank=True, null=True)  # Token for password reset
 
     objects = UserManager()
 
@@ -37,14 +39,14 @@ class User(AbstractBaseUser):
     REQUIRED_FIELDS = ['email']
 
     def set_password(self, raw_password):
-        """Override set_password to use HMAC + Salt"""
+        """Override set_password to use HMAC + Salt."""
         if raw_password:
             salt = os.urandom(16).hex()  # Generate a random Salt
             hashed_password = hmac.new(salt.encode(), raw_password.encode(), hashlib.sha256).hexdigest()
-            self.password = f'{salt}${hashed_password}'  # Save salt and hash in the format: salt$hashed_password'
+            self.password = f'{salt}${hashed_password}'  # Save salt and hash in the format: salt$hashed_password
 
     def check_password(self, raw_password):
-        """Verify the user's password"""
+        """Verify the user's password."""
         if not self.password:
             return False
         try:
@@ -59,6 +61,7 @@ class User(AbstractBaseUser):
 
 
 class Customer(models.Model):
+    """Model for storing customer details."""
     firstname = models.CharField(max_length=50)
     lastname = models.CharField(max_length=50)
     customer_id = models.CharField(max_length=10, unique=True)
@@ -70,4 +73,3 @@ class Customer(models.Model):
 
     def __str__(self):
         return f"{self.firstname} {self.lastname}"
-
