@@ -10,9 +10,9 @@ Register
     <!-- הצגת הודעות -->
     {% if messages %}
         <div class="messages">
-            <ul>
+            <ul style="color: red; list-style-type: none;">
                 {% for message in messages %}
-                    <li class="{{ message.tags }}">{{ message }}</li>
+                    <li class="{{ message.tags }}" style="color: {% if message.tags == 'error' %}red{% else %}green{% endif %};">{{ message }}</li>
                 {% endfor %}
             </ul>
         </div>
