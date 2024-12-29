@@ -1,42 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Communication LTD{% endblock %}</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-</head>
-<body>
+{% extends 'base.html' %}
 
-    <header>
-        <nav>
-            <ul>
-                <li><a href="{% url 'home' %}">Home</a></li>
-                {% if user.is_authenticated %}
-                    <li><a href="{% url 'password_change' %}">Change Password</a></li>
-                    <li>
-                        <form method="post" action="{% url 'logout' %}" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" style="background:none; border:none; color:blue; text-decoration:underline; cursor:pointer;">Logout</button>
-                        </form>
-                    </li>
-                    <li><a href="{% url 'add_customer' %}">Create Customer</a></li>
-                {% else %}
-                    <li><a href="{% url 'login' %}">Login</a></li>
-                    <li><a href="{% url 'register' %}">Register</a></li>
-                {% endif %}
-            </ul>
-        </nav>
-    </header>
+{% block title %}
+Home
+{% endblock %}
 
-    <main>
-        {% block content %}
-        {% endblock %}
-    </main>
+{% block content %}
+    <h1>Welcome to the Home Page!</h1>
 
-    <footer>
-        <p>&copy; 2024 Communication LTD</p>
-    </footer>
+    {% if user.is_authenticated %}
+        <p>Hello, {{ user.username }}! You are logged in.</p>
+    {% else %}
+        <p>You are not logged in. Please <a href="{% url 'login' %}">login</a>.</p>
+    {% endif %}
+{% endblock %}
 
-</body>
-</html>
