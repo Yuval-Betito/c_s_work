@@ -5,22 +5,29 @@ Home
 {% endblock %}
 
 {% block content %}
-    <h1>Welcome to the Home Page!</h1>
-    <p>Hello, {{ user.username }}! You are logged in.</p>
+    <style>
+        .buttons-container a {
+            display: inline-block;
+            margin: 5px;
+        }
 
-    <div>
-        <a href="{% url 'home' %}">Home</a>
-    </div>
-    <div>
-        <a href="{% url 'add_customer' %}">Create a new customer</a>
-    </div>
-    <div>
-        <a href="{% url 'password_change' %}">Change Password</a>
-    </div>
-    <div>
-        <form method="POST" action="{% url 'logout' %}" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit">Logout</button>
-        </form>
-    </div>
+        .duplicate-button {
+            display: none;
+        }
+    </style>
+
+    <h1>Welcome to the Home Page!</h1>
+    {% if user.is_authenticated %}
+        <p>Hello, {{ user.username }}! You are logged in.</p>
+        
+        <!-- כפתורים עם מזהה כדי להסתיר אותם במקרה של כפילות -->
+        <div class="buttons-container">
+            <a href="{% url 'home' %}" class="duplicate-button">Home</a>
+            <a href="{% url 'add_customer' %}" class="duplicate-button">Create a new customer</a>
+            <a href="{% url 'password_change' %}" class="duplicate-button">Change Password</a>
+            <a href="{% url 'logout' %}" class="duplicate-button">Logout</a>
+        </div>
+    {% else %}
+        <p>You are not logged in. Please <a href="{% url 'login' %}">login</a>.</p>
+    {% endif %}
 {% endblock %}
