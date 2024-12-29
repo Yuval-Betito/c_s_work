@@ -5,6 +5,7 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.views import PasswordChangeView
 from django.urls import reverse_lazy
 from django.contrib import messages  # For displaying messages
+from django.contrib.auth.decorators import login_required
 from .forms import RegisterForm, CustomerForm
 
 
@@ -33,13 +34,14 @@ def register(request):
             messages.success(request, "Registration successful. Please log in.")
             return redirect('login')
         else:
-            messages.error(request, "There was an error in your registration. Please try again.")
+            messages.error(request, "There was an error in your registration. Please correct the errors below.")
     else:
         form = RegisterForm()
 
     return render(request, 'users/register.html', {'form': form})
 
 
+@login_required
 def home(request):
     """Render the home page"""
     return render(request, 'users/home.html')
@@ -58,11 +60,13 @@ class CustomPasswordChangeView(PasswordChangeView):
         return response
 
 
+@login_required
 def password_change_done(request):
     """Display password change success message"""
     return render(request, 'users/password_change_done.html')
 
 
+@login_required
 def create_customer(request):
     """Handle creating a new customer"""
     if request.method == 'POST':
