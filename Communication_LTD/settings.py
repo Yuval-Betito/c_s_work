@@ -84,4 +84,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+# הוספת לוגיקה לנתיב LOGOUT
+LOGOUT_REDIRECT_URL = 'login'  # מפנה לדף הלוגין לאחר התנתקות
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
