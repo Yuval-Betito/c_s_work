@@ -5,6 +5,21 @@ Home
 {% endblock %}
 
 {% block content %}
-    <h1>Welcome, {{ user.username }}!</h1>
-    <p>You are now logged in.</p>
+    <h1>Welcome to the Home Page!</h1>
+
+    {% if user.is_authenticated %}
+        <p>Hello, {{ user.username }}! You are logged in.</p>
+
+        <!-- הצגת הקישורים פעם אחת בלבד -->
+        <div><a href="{% url 'home' %}">Home</a></div>
+        <div><a href="{% url 'add_customer' %}">Create a new customer</a></div>
+        <div><a href="{% url 'password_change' %}">Change Password</a></div>
+        <div><a href="{% url 'logout' %}">Logout</a></div>
+    {% else %}
+        <p>You are not logged in. Please <a href="{% url 'login' %}">login</a>.</p>
+    {% endif %}
+    
+    <footer>
+        <p>&copy; 2024 Communication LTD</p>
+    </footer>
 {% endblock %}
