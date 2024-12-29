@@ -14,7 +14,6 @@ import re
 from django.core.mail import send_mail
 from django.conf import settings
 
-
 # פונקציה לשליחת המייל עם הטוקן
 def send_reset_email(user):
     """Send reset email with the generated token."""
