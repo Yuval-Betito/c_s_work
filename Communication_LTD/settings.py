@@ -64,7 +64,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-        "OPTIONS": {"min_length": 8},
+        "OPTIONS": {"min_length": 10},  # אורך סיסמה מינימלי
     },
     {
         "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
@@ -86,5 +86,11 @@ STATIC_URL = "static/"
 
 # הוספת לוגיקה לנתיב LOGOUT
 LOGOUT_REDIRECT_URL = 'login'  # מפנה לדף הלוגין לאחר התנתקות
+
+# נתיב לדף הבית לאחר התחברות
+LOGIN_REDIRECT_URL = '/'  # דף הבית לאחר התחברות
+
+# הוספת מייל לשליחת טוקנים
+DEFAULT_FROM_EMAIL = 'no-reply@communication_ltd.com'  # כתובת המייל לשליחת טוקנים
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
