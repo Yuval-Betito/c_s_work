@@ -5,6 +5,6 @@ from .views import register, user_login, home, create_customer  # ייבוא ה�
 urlpatterns = [
     path('register/', register, name='register'),  # נתיב לרישום משתמשים חדשים
     path('login/', user_login, name='login'),      # נתיב לכניסה למערכת
-    path('home/', home, name='home'),              # דף הבית
+    path('', home, name='home'),                   # דף הבית (נתיב ריק)
     path('customer/add/', create_customer, name='add_customer'),  # הוספת לקוח חדש
 ]
