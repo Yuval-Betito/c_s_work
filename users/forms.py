@@ -5,7 +5,7 @@ import re
 from django.core.exceptions import ValidationError
 from django.conf import settings  # לשימוש ב-BASE_DIR
 
-# פונקציה כללית לבדוק סיסמאות לפי הקובץ password_config.json
+# פונקציה לבדוק סיסמאות לפי הקובץ password_config.json
 def validate_password_with_config(password):
     """Validate password against the rules in password_config.json"""
     with open(settings.BASE_DIR / 'password_config.json', 'r') as f:
@@ -18,11 +18,10 @@ def validate_password_with_config(password):
         raise ValidationError("Password must contain at least one uppercase letter.")
     if config['require_lowercase'] and not re.search(r'[a-z]', password):
         raise ValidationError("Password must contain at least one lowercase letter.")
-    if config['require_digit'] and not re.search(r'\d', password):
+    if config['require_digit'] and not re.search(r'\\d', password):
         raise ValidationError("Password must contain at least one digit.")
-    if config['require_special'] and not re.search(r'[!@#$%^&*(),.?\":{}|<>]', password):
+    if config['require_special'] and not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
         raise ValidationError("Password must contain at least one special character.")
-
 
 # טופס רישום משתמש
 class RegisterForm(forms.ModelForm):
@@ -54,7 +53,6 @@ class RegisterForm(forms.ModelForm):
             user.save()
         return user
 
-
 # טופס שינוי סיסמה
 class PasswordChangeCustomForm(forms.Form):
     old_password = forms.CharField(widget=forms.PasswordInput, label="Current Password")
@@ -74,7 +72,6 @@ class PasswordChangeCustomForm(forms.Form):
             raise ValidationError("New passwords do not match.")
         return cleaned_data
 
-
 # טופס ליצירת לקוח חדש
 class CustomerForm(forms.ModelForm):
     class Meta:
@@ -91,4 +88,3 @@ class CustomerForm(forms.ModelForm):
         if commit:
             customer.save()
         return customer
-
