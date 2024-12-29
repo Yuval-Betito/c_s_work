@@ -17,7 +17,4 @@ urlpatterns = [
 
     # נתיב להתנתקות
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),  # התנתקות עם הפניה למסך כניסה
-
-    # דף הבית
-    path('', views.home, name='home'),  # דף הבית
 ]
