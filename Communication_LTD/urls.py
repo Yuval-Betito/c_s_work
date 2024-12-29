@@ -17,7 +17,4 @@ urlpatterns = [
 
     # נתיב להתנתקות
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),  # התנתקות עם הפניה למסך כניסה
-
-    # נתיב לכניסה (כפי שהגדרת ב-users/urls.py)
-    path('login/', views.user_login, name='login'),  # הסרת ה-accounts/login/
 ]
