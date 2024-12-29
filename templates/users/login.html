@@ -19,10 +19,13 @@ Login
 
     <!-- הצגת הודעות מערכת -->
     {% if messages %}
-        <ul>
+        <ul style="color: red; list-style-type: none;">
             {% for message in messages %}
                 <li>{{ message }}</li>
             {% endfor %}
         </ul>
     {% endif %}
+
+    <!-- קישור לשכחתי סיסמה -->
+    <p><a href="{% url 'forgot_password' %}">Forgot your password?</a></p>
 {% endblock %}
