@@ -10,7 +10,7 @@ class UserManager(BaseUserManager):
     """Custom manager for User model."""
     def create_user(self, username, email, password=None):
         if not email:
-            raise ValueError("Users must have an email address")
+            raise ValueError("Users must have an email address.")
         email = self.normalize_email(email)
         user = self.model(username=username, email=email)
         if password:
@@ -19,6 +19,7 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, username, email, password):
+        """Create a superuser with admin privileges."""
         user = self.create_user(username, email, password)
         user.is_admin = True
         user.save(using=self._db)
