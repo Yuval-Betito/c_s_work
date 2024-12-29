@@ -7,6 +7,9 @@ from django.urls import reverse_lazy
 from django.contrib import messages  # For displaying messages
 from django.contrib.auth.decorators import login_required
 from .forms import RegisterForm, CustomerForm
+from .models import User
+import hashlib
+import random
 
 
 def user_login(request):
@@ -81,3 +84,37 @@ def create_customer(request):
         form = CustomerForm()
 
     return render(request, 'users/create_customer.html', {'form': form})
+
+
+def forgot_password(request):
+    """Handle forgot password functionality"""
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        try:
+            user = User.objects.get(email=email)
+            # Generate reset token
+            random_value = f"{random.randint(1000, 9999)}{user.username}"
+            reset_token = hashlib.sha1(random_value.encode()).hexdigest()
+            user.reset_token = reset_token
+            user.save()
+            messages.success(request, "Reset token sent to your email.")
+        except User.DoesNotExist:
+            messages.error(request, "No user found with this email.")
+    return render(request, 'users/forgot_password.html')
+
+
+def reset_password(request):
+    """Handle reset password functionality"""
+    if request.method == 'POST':
+        token = request.POST.get('token')
+        new_password = request.POST.get('new_password')
+        try:
+            user = User.objects.get(reset_token=token)
+            user.set_password(new_password)
+            user.reset_token = None  # Clear the reset token
+            user.save()
+            messages.success(request, "Password reset successfully.")
+            return redirect('login')
+        except User.DoesNotExist:
+            messages.error(request, "Invalid reset token.")
+    return render(request, 'users/reset_password.html')
