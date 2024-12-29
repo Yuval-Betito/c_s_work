@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Communication LTD{% endblock %}</title>
-    <!-- ניתן להוסיף קישורים ל-CSS, ג'אווה סקריפט וכו' -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     {% load static %}
-    <!-- הוספת קובץ CSS מותאם אישית -->
-    <!-- <link rel="stylesheet" href="{% static 'css/style.css' %}"> -->
 </head>
 <body>
 
@@ -24,7 +21,6 @@
                             <button type="submit" style="background:none; border:none; color:blue; text-decoration:underline; cursor:pointer;">Logout</button>
                         </form>
                     </li>
-                    <li><a href="{% url 'add_customer' %}">Create Customer</a></li>
                 {% else %}
                     <li><a href="{% url 'login' %}">Login</a></li>
                     <li><a href="{% url 'register' %}">Register</a></li>
@@ -35,7 +31,6 @@
 
     <main>
         {% block content %}
-        <!-- התוכן הספציפי לכל דף ייכנס כאן -->
         {% endblock %}
     </main>
 
