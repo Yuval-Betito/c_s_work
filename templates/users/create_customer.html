@@ -7,6 +7,15 @@ Add a New Customer
 {% block content %}
     <h1>Add a New Customer</h1>
 
+    <!-- הצגת הודעות מערכת -->
+    {% if messages %}
+        <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
     <form method="POST">
         {% csrf_token %}
         {{ form.as_p }}
@@ -18,4 +27,3 @@ Add a New Customer
         <p>The new customer's name is: {{ customer.firstname }} {{ customer.lastname }}</p>
     {% endif %}
 {% endblock %}
-
