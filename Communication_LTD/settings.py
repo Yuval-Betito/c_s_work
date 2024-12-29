@@ -64,7 +64,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-        "OPTIONS": {"min_length": 10},  # אורך סיסמה לפחות 10
+        "OPTIONS": {"min_length": 8},
     },
     {
         "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
@@ -83,21 +83,8 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]  # נתיב לתיקיית הסטטיים
 
 # הוספת לוגיקה לנתיב LOGOUT
 LOGOUT_REDIRECT_URL = 'login'  # מפנה לדף הלוגין לאחר התנתקות
-
-# הוספת לוגיקה למעבר לדף הבית אחרי התחברות
-LOGIN_REDIRECT_URL = 'home'
-
-# הגדרות דוא"ל (SMTP)
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # לדוגמה אם אתה משתמש ב-Gmail
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'your-email@gmail.com'  # כתובת המייל שלך
-EMAIL_HOST_PASSWORD = 'your-email-password'  # הסיסמה שלך למייל
-DEFAULT_FROM_EMAIL = 'your-email@gmail.com'  # המייל ממנו נשלחים המיילים
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
