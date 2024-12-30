@@ -1,13 +1,105 @@
-from django.urls import path
-from . import views
+from pathlib import Path
 
-urlpatterns = [
-    path('login/', views.user_login, name='login'),  # נתיב למסך התחברות
-    path('register/', views.register, name='register'),  # נתיב לרישום משתמש
-    path('forgot_password/', views.forgot_password, name='forgot_password'),  # שכחתי סיסמה
-    path('reset_password/', views.reset_password, name='reset_password'),  # איפוס סיסמה
-    path('password_change/', views.CustomPasswordChangeView.as_view(), name='password_change'),  # שינוי סיסמה
-    path('password_change_done/', views.password_change_done, name='password_change_done'),  # הודעה על שינוי סיסמה
-    path('add_customer/', views.create_customer, name='add_customer'),  # יצירת לקוח חדש
-    path('logout/', views.logout_view, name='logout'),  # התנתקות
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+SECRET_KEY = "django-insecure-gl=b&u71jf7ix(s^b^+y8^!eiubw&i43$r+l%)yhw#!fju)(p@"
+
+DEBUG = True
+
+ALLOWED_HOSTS = []
+
+INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "users",  # האפליקציה users
 ]
+
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+
+ROOT_URLCONF = "Communication_LTD.urls"
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / 'templates'],  # תיקיית templates
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.template.context_processors.i18n",
+                "django.contrib.messages.context_processors.messages",
+            ],
+        },
+    },
+]
+
+WSGI_APPLICATION = "Communication_LTD.wsgi.application"
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+}
+
+AUTH_USER_MODEL = 'users.User'
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": 10},  # אורך סיסמה מינימלי
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
+]
+
+LANGUAGE_CODE = "he"
+
+TIME_ZONE = "Asia/Jerusalem"
+
+USE_I18N = True
+
+USE_TZ = True
+
+STATIC_URL = "static/"
+
+# הוספת לוגיקה לנתיב LOGOUT
+LOGOUT_REDIRECT_URL = 'login'  # מפנה לדף הלוגין לאחר התנתקות
+
+# נתיב לדף הבית לאחר התחברות
+LOGIN_REDIRECT_URL = '/'  # דף הבית לאחר התחברות
+
+# הוספת מייל לשליחת טוקנים
+DEFAULT_FROM_EMAIL = 'no-reply@communication_ltd.com'  # כתובת המייל לשליחת טוקנים
+
+# אם אתה לא רוצה לשלוח מיילים אמיתיים בשלב הפיתוח
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# הגבלת ניסיונות התחברות
+MAX_LOGIN_ATTEMPTS = 3  # מקסימום מספר ניסיונות התחברות
+
+# קריאת הגדרות קובץ JSON לניהול סיסמאות
+PASSWORD_CONFIG_FILE = BASE_DIR / 'password_config.json'
