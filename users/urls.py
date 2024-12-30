@@ -1,18 +1,13 @@
+from django.urls import path
+from . import views
+
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    path('', include('users.urls')),  # Connects the user app URLs to the root
-    
-    # Password change paths
-    path('password_change/', auth_views.PasswordChangeView.as_view(template_name='users/password_change.html'), name='password_change'),
-    path('password_change/done/', auth_views.PasswordChangeDoneView.as_view(template_name='users/password_change_done.html'), name='password_change_done'),
-    
-    # Password reset paths
-    path('forgot_password/', views.forgot_password, name='forgot_password'),  # Ensure the view is implemented in views.py
-    path('reset_password/', views.reset_password, name='reset_password'),  # Ensure the view is implemented in views.py
-    
-    # Logout path
-    path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
-    
-    # Login path
-    path('login/', auth_views.LoginView.as_view(), name='login'),
+    path('login/', views.user_login, name='login'),  # נתיב למסך התחברות
+    path('register/', views.register, name='register'),  # נתיב לרישום משתמש
+    path('forgot_password/', views.forgot_password, name='forgot_password'),  # שכחתי סיסמה
+    path('reset_password/', views.reset_password, name='reset_password'),  # איפוס סיסמה
+    path('password_change/', views.CustomPasswordChangeView.as_view(), name='password_change'),  # שינוי סיסמה
+    path('password_change_done/', views.password_change_done, name='password_change_done'),  # הודעה על שינוי סיסמה
+    path('add_customer/', views.create_customer, name='add_customer'),  # יצירת לקוח חדש
+    path('logout/', views.logout_view, name='logout'),  # התנתקות
 ]
