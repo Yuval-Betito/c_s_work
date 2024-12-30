@@ -1,18 +1,18 @@
 import os
 import hmac
 import hashlib
-import re
 import json
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
+from django.conf import settings
 
 # קריאת הגדרות הקונפיגורציה מקובץ JSON
-with open('password_config.json') as f:
+with open(settings.BASE_DIR / 'password_config.json') as f:
     config = json.load(f)
 
-
+# User Manager to handle custom user model creation
 class UserManager(BaseUserManager):
     """Custom manager for User model."""
     def create_user(self, username, email, password=None):
@@ -32,7 +32,7 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-
+# The custom User model
 class User(AbstractBaseUser):
     """Custom User model with HMAC + Salt for password handling."""
     username = models.CharField(max_length=50, unique=True)
@@ -40,7 +40,7 @@ class User(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     reset_token = models.CharField(max_length=100, blank=True, null=True)  # Token for password reset
-    password_history = models.JSONField(default=list)  # שדה לשמירת היסטוריית סיסמאות
+    password_history = models.JSONField(default=list)  # Field for storing password history
 
     objects = UserManager()
 
@@ -94,10 +94,9 @@ class User(AbstractBaseUser):
         if config["password_requirements"]["special_characters"] and not any(c in "!@#$%^&*(),.?\":{}|<>" for c in password):
             raise ValidationError("Password must contain at least one special character.")
 
-        # אם נדרש מניעת מילים מתוך מילון, נוכל לבדוק את הסיסמה במילון (תוכנית חיצונית או רשימה מוגדרת)
+        # Check if the password is in a dictionary of common passwords
         if config["dictionary_check"]:
-            # לדוגמה, נוודא שהסיסמה לא כוללת את המילים השכיחות ביותר:
-            common_passwords = ["123456", "password", "qwerty"]  # דוגמה
+            common_passwords = ["123456", "password", "qwerty"]  # Example list
             if password in common_passwords:
                 raise ValidationError("Password cannot be a common password.")
         
@@ -109,7 +108,7 @@ class User(AbstractBaseUser):
         """Check if the user has admin privileges."""
         return self.is_admin
 
-
+# The Customer model (unchanged)
 class Customer(models.Model):
     """Model for storing customer details."""
     firstname = models.CharField(max_length=50)
@@ -123,3 +122,4 @@ class Customer(models.Model):
 
     def __str__(self):
         return f"{self.firstname} {self.lastname}"
+
