@@ -1,125 +1,60 @@
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
-import os
-import hmac
-import hashlib
-import json
-from django.db import models
-from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
+from django.contrib.auth.signals import user_logged_in, user_login_failed
+from django.dispatch import receiver
+from django.contrib.auth import authenticate, login as django_login
+from django.utils import timezone
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from .models import User  # Import the custom User model
 
-# קריאת הגדרות הקונפיגורציה מקובץ JSON
-with open(settings.BASE_DIR / 'password_config.json') as f:
-    config = json.load(f)
+# הגבלת מספר ניסיונות ההתחברות
+MAX_LOGIN_ATTEMPTS = settings.MAX_LOGIN_ATTEMPTS  # הגדרה מקובץ settings.py
 
-# User Manager to handle custom user model creation
-class UserManager(BaseUserManager):
-    """Custom manager for User model."""
-    def create_user(self, username, email, password=None):
-        if not email:
-            raise ValueError("Users must have an email address.")
-        email = self.normalize_email(email)
-        user = self.model(username=username, email=email)
-        if password:
-            user.set_password(password)  # Use the customized password hashing
-        user.save(using=self._db)
-        return user
+# פונקציה שתעבוד כאשר יש הצלחה בהתחברות
+@receiver(user_logged_in)
+def reset_login_attempts(sender, request, user, **kwargs):
+    # אפס את מספר הניסיונות אם המשתמש התחבר בהצלחה
+    user.failed_login_attempts = 0
+    user.last_failed_login = None
+    user.save()
 
-    def create_superuser(self, username, email, password):
-        """Create a superuser with admin privileges."""
-        user = self.create_user(username, email, password)
-        user.is_admin = True
-        user.save(using=self._db)
-        return user
+# פונקציה שתעבוד כאשר יש כישלון בהתחברות
+@receiver(user_login_failed)
+def track_failed_login_attempt(sender, request, credentials, **kwargs):
+    username = credentials.get('username')
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return  # אם המשתמש לא נמצא, אין מה לעשות
 
-# The custom User model
-class User(AbstractBaseUser):
-    """Custom User model with HMAC + Salt for password handling."""
-    username = models.CharField(max_length=50, unique=True)
-    email = models.EmailField(max_length=100, unique=True)
-    is_active = models.BooleanField(default=True)
-    is_admin = models.BooleanField(default=False)
-    reset_token = models.CharField(max_length=100, blank=True, null=True)  # Token for password reset
-    password_history = models.JSONField(default=list)  # Field for storing password history
+    # עדכון מספר הניסיונות
+    if user.failed_login_attempts is None:
+        user.failed_login_attempts = 1
+    else:
+        user.failed_login_attempts += 1
 
-    objects = UserManager()
+    # אם מספר הניסיונות עבר את המגבלה
+    if user.failed_login_attempts >= MAX_LOGIN_ATTEMPTS:
+        user.last_failed_login = timezone.now()  # שמור את הזמן האחרון שנעשו ניסיונות כושלים
+        user.save()
+        raise ValidationError("You have reached the maximum number of login attempts. Please try again later.")
+    else:
+        user.save()
 
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email']
-
-    def set_password(self, raw_password):
-        """Override set_password to use HMAC + Salt and update password history."""
-        if raw_password:
-            # Validate password strength according to requirements
-            self.validate_password_strength(raw_password)
-
-            salt = os.urandom(16).hex()  # Generate a random Salt
-            hashed_password = hmac.new(salt.encode(), raw_password.encode(), hashlib.sha256).hexdigest()
-            new_password = f'{salt}${hashed_password}'  # Save salt and hash in the format: salt$hashed_password
-            
-            # Check if the new password matches the recent password history
-            if any(hmac.compare_digest(old.split('$')[1], hashed_password) for old in self.password_history[-config["password_history"]:]): 
-                raise ValueError("Password cannot match the last 3 passwords.")
-            
-            # Update password and history
-            self.password = new_password
-            self.password_history.append(new_password)
-            # Maintain only the last N passwords (based on config)
-            self.password_history = self.password_history[-config["password_history"]:]
-
-    def check_password(self, raw_password):
-        """Verify the user's password."""
-        if not self.password:
-            return False
+def user_login(request):
+    """Handle user login with limited attempts."""
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
         try:
-            salt, stored_hash = self.password.split('$')
-            entered_hash = hmac.new(salt.encode(), raw_password.encode(), hashlib.sha256).hexdigest()
-            return stored_hash == entered_hash
-        except ValueError:
-            return False
-
-    def validate_password_strength(self, password):
-        """Ensure password meets all strength requirements."""
-        if len(password) < config["min_password_length"]:
-            raise ValidationError(f"Password must be at least {config['min_password_length']} characters long.")
-        
-        if config["password_requirements"]["uppercase"] and not any(c.isupper() for c in password):
-            raise ValidationError("Password must contain at least one uppercase letter.")
-        
-        if config["password_requirements"]["lowercase"] and not any(c.islower() for c in password):
-            raise ValidationError("Password must contain at least one lowercase letter.")
-        
-        if config["password_requirements"]["digits"] and not any(c.isdigit() for c in password):
-            raise ValidationError("Password must contain at least one digit.")
-        
-        if config["password_requirements"]["special_characters"] and not any(c in "!@#$%^&*(),.?\":{}|<>" for c in password):
-            raise ValidationError("Password must contain at least one special character.")
-
-        # Check if the password is in a dictionary of common passwords
-        if config["dictionary_check"]:
-            common_passwords = ["123456", "password", "qwerty"]  # Example list
-            if password in common_passwords:
-                raise ValidationError("Password cannot be a common password.")
-        
-    def __str__(self):
-        return self.username
-
-    @property
-    def is_staff(self):
-        """Check if the user has admin privileges.""" 
-        return self.is_admin
-
-# The Customer model (unchanged)
-class Customer(models.Model):
-    """Model for storing customer details."""
-    firstname = models.CharField(max_length=50)
-    lastname = models.CharField(max_length=50)
-    customer_id = models.CharField(max_length=10, unique=True)
-    email = models.EmailField(max_length=100, unique=True)
-    phone_number = models.CharField(
-        max_length=10,
-        validators=[RegexValidator(r'^\d{10}$', message="Phone number must be 10 digits.")],
-    )
-
-    def __str__(self):
-        return f"{self.firstname} {self.lastname}"
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                django_login(request, user)
+                messages.success(request, "Logged in successfully!")
+                return redirect('home')
+            else:
+                messages.error(request, "Invalid username or password. Please try again.")
+        except ValidationError as e:
+            messages.error(request, str(e))  # הצגת שגיאה אם עברו את המגבלה
+    return render(request, 'users/login.html')
