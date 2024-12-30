@@ -1,6 +1,6 @@
 from django.contrib.auth.signals import user_logged_in, user_login_failed
 from django.dispatch import receiver
-from django.contrib.auth import authenticate, login as django_login
+from django.contrib.auth import authenticate, login as django_login, logout
 from django.utils import timezone
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -59,3 +59,17 @@ def user_login(request):
         except ValidationError as e:
             messages.error(request, str(e))  # Show error if the user has exceeded max login attempts
     return render(request, 'users/login.html')
+
+
+# פונקציה להודעה על שינוי סיסמה
+def password_change_done(request):
+    """Display password change success message."""
+    return render(request, 'users/password_change_done.html')
+
+
+# פונקציה להתנתקות מהמערכת
+def logout_view(request):
+    """Logout the user and redirect to login page."""
+    logout(request)
+    return redirect('login')  # הפנייה לדף הלוגין לאחר התנתקות
+
