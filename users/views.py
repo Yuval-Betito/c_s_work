@@ -120,10 +120,10 @@ def forgot_password(request):
             reset_token = hashlib.sha1(random_value.encode()).hexdigest()
             user.reset_token = reset_token
             user.save()
-            
+
             # Send reset token to email
             send_reset_email(user)
-            
+
             messages.success(request, "Reset token sent to your email.")
         except User.DoesNotExist:
             messages.error(request, "No user found with this email.")
