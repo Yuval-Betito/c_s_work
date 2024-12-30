@@ -56,6 +56,7 @@ DATABASES = {
     }
 }
 
+# הגדרת המודל המותאם אישית
 AUTH_USER_MODEL = 'users.User'
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -103,3 +104,4 @@ MAX_LOGIN_ATTEMPTS = 3  # מקסימום מספר ניסיונות התחברו�
 
 # קריאת הגדרות קובץ JSON לניהול סיסמאות
 PASSWORD_CONFIG_FILE = BASE_DIR / 'password_config.json'
+
