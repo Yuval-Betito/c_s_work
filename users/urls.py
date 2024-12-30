@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
+from users import views  # יש להוסיף את השורה הזו
 
 urlpatterns = [
     path("admin/", admin.site.urls),  # נתיב לפאנל הניהול של Django
