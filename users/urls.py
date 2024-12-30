@@ -4,7 +4,7 @@ from .views import register, user_login, home, create_customer, forgot_password,
 # URLs עבור האפליקציה users
 urlpatterns = [
     path('register/', register, name='register'),  # נתיב לרישום משתמשים חדשים
-    path('login/', user_login, name='login'),      # נתיב לכניסה למערכת
+    path('accounts/login/', user_login, name='login'),      # נתיב לכניסה למערכת (העדכון כאן)
     path('', home, name='home'),                   # דף הבית (נתיב ריק)
     path('customer/add/', create_customer, name='add_customer'),  # הוספת לקוח חדש
     path('forgot_password/', forgot_password, name='forgot_password'),  # שכחתי סיסמה
