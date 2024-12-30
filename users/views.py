@@ -1,6 +1,6 @@
 from django.contrib.auth.signals import user_logged_in, user_login_failed
 from django.dispatch import receiver
-from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login as django_login
 from django.utils import timezone
 from django.conf import settings
 from django.core.exceptions import ValidationError
