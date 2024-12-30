@@ -93,4 +93,7 @@ LOGIN_REDIRECT_URL = '/'  # דף הבית לאחר התחברות
 # הוספת מייל לשליחת טוקנים
 DEFAULT_FROM_EMAIL = 'no-reply@communication_ltd.com'  # כתובת המייל לשליחת טוקנים
 
+# אם אתה לא רוצה לשלוח מיילים אמיתיים בשלב הפיתוח
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
