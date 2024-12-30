@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -103,3 +104,8 @@ MAX_LOGIN_ATTEMPTS = 3  # מקסימום מספר ניסיונות התחברו�
 
 # קריאת הגדרות קובץ JSON לניהול סיסמאות
 PASSWORD_CONFIG_FILE = BASE_DIR / 'password_config.json'
+
+# Load password configuration from the JSON file
+with open(PASSWORD_CONFIG_FILE, 'r') as f:
+    PASSWORD_CONFIG = json.load(f)
+
