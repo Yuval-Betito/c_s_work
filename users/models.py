@@ -58,12 +58,13 @@ class User(AbstractBaseUser):
             new_password = f'{salt}${hashed_password}'  # Save salt and hash in the format: salt$hashed_password
             
             # Check if the new password matches the recent password history
-            if any(hmac.compare_digest(old.split('$')[1], hashed_password) for old in self.password_history[-config["password_history"]:]):
+            if any(hmac.compare_digest(old.split('$')[1], hashed_password) for old in self.password_history[-config["password_history"]:]): 
                 raise ValueError("Password cannot match the last 3 passwords.")
             
             # Update password and history
             self.password = new_password
             self.password_history.append(new_password)
+            # Maintain only the last N passwords (based on config)
             self.password_history = self.password_history[-config["password_history"]:]
 
     def check_password(self, raw_password):
@@ -122,4 +123,3 @@ class Customer(models.Model):
 
     def __str__(self):
         return f"{self.firstname} {self.lastname}"
-
