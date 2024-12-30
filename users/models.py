@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.shortcuts import render, redirect
-from .models import User  # Import the custom User model
+
 
 # הגבלת מספר ניסיונות ההתחברות
 MAX_LOGIN_ATTEMPTS = settings.MAX_LOGIN_ATTEMPTS  # הגדרה מקובץ settings.py
