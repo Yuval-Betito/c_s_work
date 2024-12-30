@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
-from django.contrib.auth import views as auth_views
-from users import views
+from django.contrib.auth import views as auth_views  # Import this to fix the issue
+from users import views  # Import for home view
 
 urlpatterns = [
     path("admin/", admin.site.urls),  # נתיב לפאנל הניהול של Django
@@ -17,7 +17,4 @@ urlpatterns = [
 
     # נתיב להתנתקות
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),  # התנתקות עם הפניה למסך כניסה
-
-    # עדכון נתיב לכניסה
-    path('login/', views.user_login, name='login'),  # הוספת נתיב התחברות
 ]
