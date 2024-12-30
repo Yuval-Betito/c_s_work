@@ -1,165 +1,57 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login as django_login
-from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.views import PasswordChangeView
-from django.urls import reverse_lazy
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from .forms import RegisterForm, CustomerForm
-from .models import User
-import hashlib
-import random
-import re
-from django.core.mail import send_mail
+from django.contrib.auth.signals import user_logged_in, user_login_failed
+from django.dispatch import receiver
+from django.contrib.auth.models import User
+from django.utils import timezone
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from .models import User  # Import the custom User model
 
-# פונקציה לשליחת המייל עם הטוקן
-def send_reset_email(user):
-    """Send reset email with the generated token."""
-    token = user.reset_token
-    subject = "Password Reset Request"
-    message = f"""
-    Hello {user.username},
+# הגבלת מספר ניסיונות ההתחברות
+MAX_LOGIN_ATTEMPTS = settings.MAX_LOGIN_ATTEMPTS  # הגדרה מקובץ settings.py
 
-    We received a request to reset your password for your Communication_LTD account.
-    Please use the following token to reset your password:
+# פונקציה שתעבוד כאשר יש הצלחה בהתחברות
+@receiver(user_logged_in)
+def reset_login_attempts(sender, request, user, **kwargs):
+    user.failed_login_attempts = 0
+    user.last_failed_login = None
+    user.save()
 
-    Reset Token: {token}
+# פונקציה שתעבוד כאשר יש כישלון בהתחברות
+@receiver(user_login_failed)
+def track_failed_login_attempt(sender, request, credentials, **kwargs):
+    username = credentials.get('username')
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return  # If the user doesn't exist, do nothing
 
-    If you did not request a password reset, please ignore this email.
+    if user.failed_login_attempts is None:
+        user.failed_login_attempts = 1
+    else:
+        user.failed_login_attempts += 1
 
-    Best regards,
-    Communication_LTD Team
-    """
-    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
-
+    if user.failed_login_attempts >= MAX_LOGIN_ATTEMPTS:
+        user.last_failed_login = timezone.now()
+        user.save()
+        raise ValidationError("You have reached the maximum number of login attempts. Please try again later.")
+    else:
+        user.save()
 
 def user_login(request):
-    """Handle user login"""
+    """Handle user login with limited attempts."""
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            django_login(request, user)
-            messages.success(request, "Logged in successfully!")
-            return redirect('home')
-        else:
-            messages.error(request, "Invalid username or password. Please try again.")
-    return render(request, 'users/login.html')
-
-
-def register(request):
-    """Handle user registration"""
-    if request.method == 'POST':
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Registration successful. Please log in.")
-            return redirect('login')
-        else:
-            messages.error(request, "There was an error in your registration. Please correct the errors below.")
-    else:
-        form = RegisterForm()
-
-    return render(request, 'users/register.html', {'form': form})
-
-
-@login_required
-def home(request):
-    """Render the home page"""
-    return render(request, 'users/home.html')
-
-
-class CustomPasswordChangeView(PasswordChangeView):
-    """Custom view for handling password change"""
-    template_name = 'users/password_change.html'
-    success_url = reverse_lazy('password_change_done')
-
-    def form_valid(self, form):
-        """Update the session after password change"""
-        response = super().form_valid(form)
-        update_session_auth_hash(self.request, form.user)
-        messages.success(self.request, "Your password was changed successfully.")
-        return response
-
-
-@login_required
-def password_change_done(request):
-    """Display password change success message"""
-    return render(request, 'users/password_change_done.html')
-
-
-@login_required
-def create_customer(request):
-    """Handle creating a new customer"""
-    if request.method == 'POST':
-        form = CustomerForm(request.POST)
-        if form.is_valid():
-            customer = form.save()
-            messages.success(request, f"Customer {customer.firstname} {customer.lastname} added successfully!")
-            return redirect('home')
-        else:
-            messages.error(request, "Error in creating customer. Please check the form fields.")
-    else:
-        form = CustomerForm()
-
-    return render(request, 'users/create_customer.html', {'form': form})
-
-
-def forgot_password(request):
-    """Handle forgot password functionality"""
-    if request.method == 'POST':
-        email = request.POST.get('email')
         try:
-            user = User.objects.get(email=email)
-            # Generate reset token using SHA-1
-            random_value = f"{random.randint(1000, 9999)}{user.username}"
-            reset_token = hashlib.sha1(random_value.encode()).hexdigest()
-            user.reset_token = reset_token
-            user.save()
-
-            # Send reset token to email
-            send_reset_email(user)
-
-            messages.success(request, "Reset token sent to your email.")
-        except User.DoesNotExist:
-            messages.error(request, "No user found with this email.")
-    return render(request, 'users/forgot_password.html')
-
-
-def validate_password(password):
-    """Check if the password meets the requirements."""
-    if len(password) < 10:
-        return False
-    if not re.search(r'[A-Z]', password):  # Uppercase letter
-        return False
-    if not re.search(r'[a-z]', password):  # Lowercase letter
-        return False
-    if not re.search(r'[0-9]', password):  # Digit
-        return False
-    if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):  # Special character
-        return False
-    return True
-
-
-def reset_password(request):
-    """Handle reset password functionality"""
-    if request.method == 'POST':
-        token = request.POST.get('token')
-        new_password = request.POST.get('new_password')
-        try:
-            user = User.objects.get(reset_token=token)
-            if validate_password(new_password):
-                user.set_password(new_password)
-                user.reset_token = None  # Clear the reset token after use
-                user.save()
-                messages.success(request, "Password reset successfully.")
-                return redirect('login')
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                django_login(request, user)
+                messages.success(request, "Logged in successfully!")
+                return redirect('home')
             else:
-                messages.error(request, "Password does not meet the requirements.")
-        except User.DoesNotExist:
-            messages.error(request, "Invalid reset token.")
-    return render(request, 'users/reset_password.html')
+                messages.error(request, "Invalid username or password. Please try again.")
+        except ValidationError as e:
+            messages.error(request, str(e))  # Show validation error if max login attempts are exceeded
+    return render(request, 'users/login.html')
