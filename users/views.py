@@ -14,6 +14,7 @@ MAX_LOGIN_ATTEMPTS = settings.MAX_LOGIN_ATTEMPTS  # הגדרה מקובץ settin
 # פונקציה שתעבוד כאשר יש הצלחה בהתחברות
 @receiver(user_logged_in)
 def reset_login_attempts(sender, request, user, **kwargs):
+    # אפס את מספר הניסיונות אם המשתמש התחבר בהצלחה
     user.failed_login_attempts = 0
     user.last_failed_login = None
     user.save()
@@ -25,15 +26,17 @@ def track_failed_login_attempt(sender, request, credentials, **kwargs):
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return  # If the user doesn't exist, do nothing
+        return  # אם המשתמש לא נמצא, אין מה לעשות
 
+    # עדכון מספר הניסיונות
     if user.failed_login_attempts is None:
         user.failed_login_attempts = 1
     else:
         user.failed_login_attempts += 1
 
+    # אם מספר הניסיונות עבר את המגבלה
     if user.failed_login_attempts >= MAX_LOGIN_ATTEMPTS:
-        user.last_failed_login = timezone.now()
+        user.last_failed_login = timezone.now()  # שמור את הזמן האחרון שנעשו ניסיונות כושלים
         user.save()
         raise ValidationError("You have reached the maximum number of login attempts. Please try again later.")
     else:
@@ -53,5 +56,5 @@ def user_login(request):
             else:
                 messages.error(request, "Invalid username or password. Please try again.")
         except ValidationError as e:
-            messages.error(request, str(e))  # Show validation error if max login attempts are exceeded
+            messages.error(request, str(e))  # הצגת שגיאה אם עברו את המגבלה
     return render(request, 'users/login.html')
