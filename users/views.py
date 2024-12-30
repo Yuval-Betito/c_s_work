@@ -14,7 +14,7 @@ MAX_LOGIN_ATTEMPTS = settings.MAX_LOGIN_ATTEMPTS  # הגדרה מקובץ settin
 # פונקציה שתעבוד כאשר יש הצלחה בהתחברות
 @receiver(user_logged_in)
 def reset_login_attempts(sender, request, user, **kwargs):
-    # אפס את מספר הניסיונות אם המשתמש התחבר בהצלחה
+    """Reset login attempts when the user successfully logs in."""
     user.failed_login_attempts = 0
     user.last_failed_login = None
     user.save()
@@ -22,21 +22,22 @@ def reset_login_attempts(sender, request, user, **kwargs):
 # פונקציה שתעבוד כאשר יש כישלון בהתחברות
 @receiver(user_login_failed)
 def track_failed_login_attempt(sender, request, credentials, **kwargs):
+    """Track failed login attempts and block the user after exceeding the maximum attempts."""
     username = credentials.get('username')
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return  # אם המשתמש לא נמצא, אין מה לעשות
+        return  # If the user does not exist, do nothing
 
-    # עדכון מספר הניסיונות
+    # Update the number of failed login attempts
     if user.failed_login_attempts is None:
         user.failed_login_attempts = 1
     else:
         user.failed_login_attempts += 1
 
-    # אם מספר הניסיונות עבר את המגבלה
+    # If the number of failed attempts exceeds the limit, block the user
     if user.failed_login_attempts >= MAX_LOGIN_ATTEMPTS:
-        user.last_failed_login = timezone.now()  # שמור את הזמן האחרון שנעשו ניסיונות כושלים
+        user.last_failed_login = timezone.now()  # Store the time of the last failed attempt
         user.save()
         raise ValidationError("You have reached the maximum number of login attempts. Please try again later.")
     else:
@@ -56,5 +57,5 @@ def user_login(request):
             else:
                 messages.error(request, "Invalid username or password. Please try again.")
         except ValidationError as e:
-            messages.error(request, str(e))  # הצגת שגיאה אם עברו את המגבלה
+            messages.error(request, str(e))  # Show error if the user has exceeded max login attempts
     return render(request, 'users/login.html')
