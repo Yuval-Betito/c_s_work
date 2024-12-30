@@ -19,7 +19,19 @@ def send_reset_email(user):
     """Send reset email with the generated token."""
     token = user.reset_token
     subject = "Password Reset Request"
-    message = f"Use the following token to reset your password: {token}"
+    message = f"""
+    Hello {user.username},
+
+    We received a request to reset your password for your Communication_LTD account.
+    Please use the following token to reset your password:
+
+    Reset Token: {token}
+
+    If you did not request a password reset, please ignore this email.
+
+    Best regards,
+    Communication_LTD Team
+    """
     send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
 
 
@@ -103,7 +115,7 @@ def forgot_password(request):
         email = request.POST.get('email')
         try:
             user = User.objects.get(email=email)
-            # Generate reset token
+            # Generate reset token using SHA-1
             random_value = f"{random.randint(1000, 9999)}{user.username}"
             reset_token = hashlib.sha1(random_value.encode()).hexdigest()
             user.reset_token = reset_token
@@ -142,7 +154,7 @@ def reset_password(request):
             user = User.objects.get(reset_token=token)
             if validate_password(new_password):
                 user.set_password(new_password)
-                user.reset_token = None  # Clear the reset token
+                user.reset_token = None  # Clear the reset token after use
                 user.save()
                 messages.success(request, "Password reset successfully.")
                 return redirect('login')
