@@ -12,13 +12,13 @@ def validate_password_with_config(password, user=None):
         config = json.load(f)
 
     # בדיקות על בסיס קובץ התצורה
-    if len(password) < config['min_length']:
-        raise ValidationError(f"Password must be at least {config['min_length']} characters long.")
+    if len(password) < config['min_password_length']:
+        raise ValidationError(f"Password must be at least {config['min_password_length']} characters long.")
     if config['require_uppercase'] and not re.search(r'[A-Z]', password):
         raise ValidationError("Password must contain at least one uppercase letter.")
     if config['require_lowercase'] and not re.search(r'[a-z]', password):
         raise ValidationError("Password must contain at least one lowercase letter.")
-    if config['require_digit'] and not re.search(r'\\d', password):
+    if config['require_digit'] and not re.search(r'\d', password):
         raise ValidationError("Password must contain at least one digit.")
     if config['require_special'] and not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
         raise ValidationError("Password must contain at least one special character.")
@@ -30,7 +30,7 @@ def validate_password_with_config(password, user=None):
             raise ValidationError("Password cannot be a common password.")
 
     # מניעת שימוש בסיסמאות מהיסטוריה (אם משתמש מוגדר)
-    if user and config['history_check']:
+    if user and config.get('history_check', False):
         hashed_passwords = [entry.split('$')[1] for entry in user.password_history]
         if any(re.search(hashed, password) for hashed in hashed_passwords):
             raise ValidationError("Password cannot match the last used passwords.")
