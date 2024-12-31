@@ -16,6 +16,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "users",  # האפליקציה users
+    "axes",  # הוספת אפליקציה להגבלת ניסיונות Login
 ]
 
 MIDDLEWARE = [
@@ -24,6 +25,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "axes.middleware.AxesMiddleware",  # הוספת Middleware להגבלת ניסיונות Login
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -98,3 +100,15 @@ DEFAULT_FROM_EMAIL = 'no-reply@communication_ltd.com'  # כתובת המייל �
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# הגבלת ניסיונות Login
+AXES_FAILURE_LIMIT = 3  # מספר הניסיונות המקסימלי
+AXES_LOCK_OUT_AT_FAILURE = True  # נעילת חשבון לאחר מספר ניסיונות כושלים
+
+# מניעת שימוש בסיסמאות מילון
+PASSWORD_DICTIONARY_PATH = BASE_DIR / "common_passwords.txt"
+AUTH_PASSWORD_VALIDATORS.append({
+    "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    "OPTIONS": {
+        "dictionary_path": str(PASSWORD_DICTIONARY_PATH)
+    },
+})
