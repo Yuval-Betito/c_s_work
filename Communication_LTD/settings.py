@@ -87,6 +87,9 @@ STATIC_URL = "static/"
 # הוספת לוגיקה לנתיב LOGOUT
 LOGOUT_REDIRECT_URL = 'login'  # מפנה לדף הלוגין לאחר התנתקות
 
+# הוספת URL ברירת מחדל למקרה שאין למשתמש הרשאות
+LOGIN_URL = '/login/'
+
 # נתיב לדף הבית לאחר התחברות
 LOGIN_REDIRECT_URL = '/'  # דף הבית לאחר התחברות
 
