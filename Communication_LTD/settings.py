@@ -101,8 +101,10 @@ DEFAULT_FROM_EMAIL = 'no-reply@communication_ltd.com'  # כתובת המייל �
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # הגבלת ניסיונות Login
-AXES_FAILURE_LIMIT = 3  # מספר הניסיונות המקסימלי
-AXES_LOCK_OUT_AT_FAILURE = True  # נעילת חשבון לאחר מספר ניסיונות כושלים
+AXES_FAILURE_LIMIT = 3  # מספר ניסיונות כושלים לפני חסימה
+AXES_LOCK_OUT_AT_FAILURE = True  # חסימה לאחר כישלון
+AXES_RESET_COOL_OFF_ON_FAILURE_DURING_LOCKOUT = True  # איפוס חסימה אחרי זמן מסוים
+
 
 # מניעת שימוש בסיסמאות מילון
 PASSWORD_DICTIONARY_PATH = BASE_DIR / "common_passwords.txt"
