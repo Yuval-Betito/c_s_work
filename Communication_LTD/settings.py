@@ -25,7 +25,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "axes.middleware.AxesMiddleware",  # הוספת Middleware להגבלת ניסיונות Login
+    "axes.middleware.AxesMiddleware",  # Middleware להגבלת ניסיונות Login
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -69,9 +69,6 @@ AUTH_PASSWORD_VALIDATORS = [
         "OPTIONS": {"min_length": 10},  # אורך סיסמה מינימלי
     },
     {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
@@ -104,7 +101,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AXES_FAILURE_LIMIT = 3  # מספר ניסיונות כושלים לפני חסימה
 AXES_LOCK_OUT_AT_FAILURE = True  # חסימה לאחר כישלון
 AXES_RESET_COOL_OFF_ON_FAILURE_DURING_LOCKOUT = True  # איפוס חסימה אחרי זמן מסוים
-
+AXES_RESET_ON_SUCCESS = True  # איפוס ניסיונות כושלים לאחר הצלחה
 
 # מניעת שימוש בסיסמאות מילון
 PASSWORD_DICTIONARY_PATH = BASE_DIR / "common_passwords.txt"
@@ -114,3 +111,4 @@ AUTH_PASSWORD_VALIDATORS.append({
         "dictionary_path": str(PASSWORD_DICTIONARY_PATH)
     },
 })
+
