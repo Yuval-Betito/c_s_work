@@ -15,8 +15,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "users",  # האפליקציה users
-    "axes",  # הוספת אפליקציה להגבלת ניסיונות Login
+    "users",
+    "axes",
 ]
 
 MIDDLEWARE = [
@@ -25,7 +25,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "axes.middleware.AxesMiddleware",  # Middleware להגבלת ניסיונות Login
+    "axes.middleware.AxesMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -35,7 +35,7 @@ ROOT_URLCONF = "Communication_LTD.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / 'templates'],  # תיקיית templates
+        "DIRS": [BASE_DIR / 'templates'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -66,49 +66,37 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-        "OPTIONS": {"min_length": 10},  # אורך סיסמה מינימלי
+        "OPTIONS": {"min_length": 10},
     },
     {
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+        "OPTIONS": {"dictionary_path": str(BASE_DIR / "common_passwords.txt")}
+    },
+]
+
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",
+    "django.contrib.auth.backends.ModelBackend",
 ]
 
 LANGUAGE_CODE = "he"
-
 TIME_ZONE = "Asia/Jerusalem"
-
 USE_I18N = True
-
 USE_TZ = True
 
 STATIC_URL = "static/"
 
-# הוספת לוגיקה לנתיב LOGOUT
-LOGOUT_REDIRECT_URL = 'login'  # מפנה לדף הלוגין לאחר התנתקות
-
-# הוספת URL ברירת מחדל למקרה שאין למשתמש הרשאות
+LOGOUT_REDIRECT_URL = 'login'
 LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
 
-# נתיב לדף הבית לאחר התחברות
-LOGIN_REDIRECT_URL = '/'  # דף הבית לאחר התחברות
-
-# הוספת מייל לשליחת טוקנים
-DEFAULT_FROM_EMAIL = 'no-reply@communication_ltd.com'  # כתובת המייל לשליחת טוקנים
-
+DEFAULT_FROM_EMAIL = 'no-reply@communication_ltd.com'
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# הגבלת ניסיונות Login
-AXES_FAILURE_LIMIT = 3  # מספר ניסיונות כושלים לפני חסימה
-AXES_LOCK_OUT_AT_FAILURE = True  # חסימה לאחר כישלון
-AXES_RESET_COOL_OFF_ON_FAILURE_DURING_LOCKOUT = True  # איפוס חסימה אחרי זמן מסוים
-AXES_RESET_ON_SUCCESS = True  # איפוס ניסיונות כושלים לאחר הצלחה
-
-# מניעת שימוש בסיסמאות מילון
-PASSWORD_DICTIONARY_PATH = BASE_DIR / "common_passwords.txt"
-AUTH_PASSWORD_VALIDATORS.append({
-    "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    "OPTIONS": {
-        "dictionary_path": str(PASSWORD_DICTIONARY_PATH)
-    },
-})
-
+AXES_FAILURE_LIMIT = 3
+AXES_LOCK_OUT_AT_FAILURE = True
+AXES_RESET_COOL_OFF_ON_FAILURE_DURING_LOCKOUT = True
+AXES_RESET_ON_SUCCESS = True
