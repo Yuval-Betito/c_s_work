@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from django.conf import settings  # לשימוש ב-BASE_DIR
 
 # פונקציה לבדוק סיסמאות לפי הקובץ password_config.json
-def validate_password_with_config(password):
+def validate_password_with_config(password, user=None):
     """Validate password against the rules in password_config.json"""
     with open(settings.BASE_DIR / 'password_config.json', 'r') as f:
         config = json.load(f)
@@ -18,10 +18,22 @@ def validate_password_with_config(password):
         raise ValidationError("Password must contain at least one uppercase letter.")
     if config['require_lowercase'] and not re.search(r'[a-z]', password):
         raise ValidationError("Password must contain at least one lowercase letter.")
-    if config['require_digit'] and not re.search(r'\d', password):
+    if config['require_digit'] and not re.search(r'\\d', password):
         raise ValidationError("Password must contain at least one digit.")
     if config['require_special'] and not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
         raise ValidationError("Password must contain at least one special character.")
+
+    # מניעת שימוש בסיסמאות מילון
+    if config['dictionary_check']:
+        common_passwords = ["123456", "password", "qwerty"]  # דוגמה לרשימת מילים נפוצות
+        if password in common_passwords:
+            raise ValidationError("Password cannot be a common password.")
+
+    # מניעת שימוש בסיסמאות מהיסטוריה (אם משתמש מוגדר)
+    if user and config['history_check']:
+        hashed_passwords = [entry.split('$')[1] for entry in user.password_history]
+        if any(re.search(hashed, password) for hashed in hashed_passwords):
+            raise ValidationError("Password cannot match the last used passwords.")
 
 # טופס רישום משתמש
 class RegisterForm(forms.ModelForm):
@@ -59,9 +71,13 @@ class PasswordChangeCustomForm(forms.Form):
     new_password = forms.CharField(widget=forms.PasswordInput, label="New Password")
     confirm_new_password = forms.CharField(widget=forms.PasswordInput, label="Confirm New Password")
 
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
     def clean_new_password(self):
         new_password = self.cleaned_data.get('new_password')
-        validate_password_with_config(new_password)  # בדיקת סיסמה חדשה
+        validate_password_with_config(new_password, user=self.user)  # בדיקת סיסמה חדשה
         return new_password
 
     def clean(self):
